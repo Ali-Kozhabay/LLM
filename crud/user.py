@@ -1,8 +1,10 @@
+import random
+from datetime import datetime , timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select 
+from sqlalchemy import select, update
 from fastapi import HTTPException
-from app.models.user import User 
+from app.models.user import User, ResetPassword
 from app.models.course import Enrollment, Course
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
@@ -72,6 +74,33 @@ class UserCRUD:
             return (f"Your courses:", courses)
         except Exception as e:
             raise e
+        
+    async def verify_reset_code(db:AsyncSession,id:int,code:int):
+        res=await db.execute(select(ResetPassword).where(ResetPassword.id==id and ResetPassword.code==code))
+        res=res.scalar_one_or_none()
+        if not res.created_at + timedelta(minutes=5) < datetime.now():
+            raise HTTPException(status_code=403,detail='code is expired')
+        
+    async def new_password(db:AsyncSession,password:str,id:int):
+        hashed_password=get_password_hash(password=password)
+        try:
+            await db.execute(update(User).where(User.id==id).values(hashed_password=hashed_password))
+            return {'message':"Password was changed"}
+        except Exception as e:
+            raise e
+        
+    async def reset_password_db(db:AsyncSession, email:str)
+        for_db=ResetPassword(
+            email=email,
+            code=random.randint(1000,9999)
+        )
+        db.add(for_db)
+        await db.commit()
+        await db.refresh(for_db)
+
+
+
+        
      
         
 

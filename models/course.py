@@ -48,8 +48,8 @@ class Enrollment(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"))
-    enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True,server_default=(func.now()+timedelta(days=30)))
+    enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now())
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True,default=(datetime.now()+timedelta(days=30)))
     
     # Relationships
     student: Mapped["User"] = relationship("User", back_populates="enrolled_courses")

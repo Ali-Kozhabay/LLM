@@ -1,4 +1,5 @@
 import logging
+import json
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -20,7 +21,7 @@ router = APIRouter()
 async def get_courses(db: AsyncSession = Depends(get_db)):
     logger.info("Fetching all courses")
     courses = await course_crud.get_courses_from_db(db)
-    return courses.scalars().all()
+    return courses
 
 @router.get("/course/{id}")
 async def get_course(id:int,db: AsyncSession = Depends(get_db)):

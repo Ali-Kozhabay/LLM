@@ -32,5 +32,12 @@ async def get_my_courses(db:AsyncSession=Depends(get_db),current_user:User=Depen
         return await user_crud.get_my_course(db=db,id=current_user.id)
     except Exception as e:
         raise e
+    
+@router.post('/reset_password')
+async def reset_password(db:AsyncSession, email:str):
+    await user_crud.reset_password_db(db=db,email=email)
 
+@router.post('/new_password')
+async def new_password(db:AsyncSession):
+    id=
     

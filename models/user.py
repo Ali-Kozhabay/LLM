@@ -33,3 +33,13 @@ class User(Base):
     # Relationships
     enrolled_courses: Mapped["Enrollment"] = relationship("Enrollment", back_populates="student")
     created_courses: Mapped["Course"] = relationship("Course", back_populates="teacher")
+
+
+class ResetPassword(Base):
+
+    __tablename__="resetpasswords"
+
+    id:Mapped[int]=mapped_column(primary_key=True,unique=True)
+    email:Mapped[str]=mapped_column(unique=True)
+    code:Mapped[int]=mapped_column()
+    created_at:Mapped[datetime]=mapped_column(default=datetime.now())
