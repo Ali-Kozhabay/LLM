@@ -13,3 +13,8 @@ class CourseCreate(BaseModel):
 class CoursePublish(BaseModel):
     id: int
     publish: bool
+
+
+class CoursePurchase(BaseModel):
+    student_id:int
+    course_id:int

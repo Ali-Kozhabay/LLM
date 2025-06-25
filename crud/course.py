@@ -2,7 +2,7 @@
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.course import Course
+from app.models.course import Course, Enrollment
 from app.schemas.course import CourseCreate, CoursePublish
 
 
@@ -10,6 +10,14 @@ class CourseCRUD:
 
     async def get_courses_from_db(self,db:AsyncSession):
         res= await db.execute(select(Course).where(Course.is_published==True))
+        return res
+    
+    async def get_courses_from_db(self,db:AsyncSession):
+        res= await db.execute(select(Course))
+        return res
+
+    async def get_course_from_db_by_id(self,id:int,db:AsyncSession):
+        res= await db.execute(select(Course).where(Course.is_published==True and Course.id==id))
         return res
     
     async def create_course_for_db(self, db:AsyncSession, course:CourseCreate):
@@ -32,7 +40,17 @@ class CourseCRUD:
             return {'message':'Course is published'}
         except Exception as e:
             raise e
-    
+    async def purchase_course(self,db:AsyncSession,student_id:int,course_id:int):
+        try:
+            db_purchase_course=Enrollment(
+                student_id=student_id,
+                course_id=course_id
+            )
+            db.add(db_purchase_course)
+            await db.commit()
+            await db.refresh(db_purchase_course)
+        except Exception as e:
+            raise e
         
         
         

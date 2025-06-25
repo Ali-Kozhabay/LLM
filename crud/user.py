@@ -2,7 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select 
 from fastapi import HTTPException
-from app.models.user import User
+from app.models.user import User 
+from app.models.course import Enrollment, Course
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
 from typing import Optional
@@ -57,5 +58,21 @@ class UserCRUD:
         await db.commit()
         await db.refresh(user)
         return user
+    
+    async def get_my_course(self,db:AsyncSession,id:int):
+        try:
+            result = await db.execute(
+            select(Course)
+            .join(Enrollment)
+            .where(Enrollment.student_id == id)
+        )
+            courses = result.scalars().all()
+            if not courses:
+                return {"message": "You do not have any courses yet"}
+            return (f"Your courses:", courses)
+        except Exception as e:
+            raise e
+     
+        
 
 user_crud = UserCRUD()

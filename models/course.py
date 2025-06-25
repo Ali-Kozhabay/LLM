@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List, Optional
 
@@ -49,7 +49,7 @@ class Enrollment(Base):
     student_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"))
     enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True,server_default=(func.now()+timedelta(days=30)))
     
     # Relationships
     student: Mapped["User"] = relationship("User", back_populates="enrolled_courses")

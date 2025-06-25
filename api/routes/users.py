@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.api.deps import get_current_active_user
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.api.deps import get_current_active_user, get_current_user
 from app.core.database import get_db
 from app.crud.user import user_crud
 from app.models.user import User
@@ -18,10 +18,19 @@ async def read_user_me(current_user: User = Depends(get_current_active_user)):
 async def update_user_me(
     user_in: UserUpdate,
     current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update current user profile"""
     user = await user_crud.update(db, user_id=current_user.id, user_in=user_in)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+@router.get('/my_courses')
+async def get_my_courses(db:AsyncSession=Depends(get_db),current_user:User=Depends(get_current_user)):
+    try:
+        return await user_crud.get_my_course(db=db,id=current_user.id)
+    except Exception as e:
+        raise e
+
+    
