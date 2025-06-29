@@ -8,7 +8,7 @@ from app.schemas.course import CourseCreate, CoursePublish
 
 class CourseCRUD:
 
-    async def get_courses_from_db(self,db:AsyncSession):
+    async def get_published_courses_from_db(self,db:AsyncSession):
         res= await db.execute(select(Course).where(Course.is_published==True))
         return res
     

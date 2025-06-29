@@ -20,8 +20,11 @@ router = APIRouter()
 @router.get("/courses")
 async def get_courses(db: AsyncSession = Depends(get_db)):
     logger.info("Fetching all courses")
-    courses = await course_crud.get_courses_from_db(db)
-    return courses
+    courses = await course_crud.get_published_courses_from_db(db)
+    if not courses:
+        return {'message':'No avaliable course'}
+    return {'courses:':courses.scalar_one_or_none}
+
 
 @router.get("/course/{id}")
 async def get_course(id:int,db: AsyncSession = Depends(get_db)):
@@ -29,11 +32,13 @@ async def get_course(id:int,db: AsyncSession = Depends(get_db)):
     courses = await course_crud.get_courses_from_db(db)
     return courses.scalars().all()
 
+
 @router.get("/courses_for_superuser")
 async def get_courses_for_superuser(db: AsyncSession = Depends(get_db),current_user:User=Depends(get_current_superuser)):
     logger.info("Fetching all courses for superuser")
     courses = await course_crud.get_courses_from_db(db)
     return courses.scalars().all()
+
 
 @router.post("/creating_courses")
 async def create_courses(

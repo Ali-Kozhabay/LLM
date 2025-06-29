@@ -11,6 +11,8 @@ from app.core.security import get_password_hash, verify_password
 from typing import Optional
 
 class UserCRUD:
+
+    
     async def get_by_email(self, db: AsyncSession, email: str) -> Optional[User]:
         res=await db.execute(select(User).where(User.email == email))
         return res.scalar_one_or_none()
@@ -75,28 +77,104 @@ class UserCRUD:
         except Exception as e:
             raise e
         
-    async def verify_reset_code(db:AsyncSession,id:int,code:int):
-        res=await db.execute(select(ResetPassword).where(ResetPassword.id==id and ResetPassword.code==code))
-        res=res.scalar_one_or_none()
-        if not res.created_at + timedelta(minutes=5) < datetime.now():
-            raise HTTPException(status_code=403,detail='code is expired')
-        
-    async def new_password(db:AsyncSession,password:str,id:int):
-        hashed_password=get_password_hash(password=password)
+    async def verify_reset_code(self, db: AsyncSession, reset_id: int, code: str) -> bool:
+        """Verify OTP code for password reset"""
         try:
-            await db.execute(update(User).where(User.id==id).values(hashed_password=hashed_password))
-            return {'message':"Password was changed"}
-        except Exception as e:
-            raise e
+            res = await db.execute(
+                select(ResetPassword).where(
+                    ResetPassword.id == reset_id,
+                    ResetPassword.code == int(code)
+                )
+            )
+            reset_record = res.scalar_one_or_none()
+            
+            if not reset_record:
+                raise HTTPException(status_code=400, detail='Invalid OTP code')
+            
+            # Check if code is expired (5 minutes)
+            if datetime.now() > reset_record.created_at + timedelta(minutes=5):
+                # Delete expired record
+                await db.delete(reset_record)
+                await db.commit()
+                raise HTTPException(status_code=403, detail='OTP code has expired')
+                
+            return True
+            
+        except ValueError:
+            raise HTTPException(status_code=400, detail='Invalid OTP code format')
         
-    async def reset_password_db(db:AsyncSession, email:str)
-        for_db=ResetPassword(
-            email=email,
-            code=random.randint(1000,9999)
+    async def update_password_by_email(self, db: AsyncSession, email: str, new_password: str) -> bool:
+        """Update user password by email"""
+        hashed_password = get_password_hash(new_password)
+        try:
+            result = await db.execute(
+                update(User)
+                .where(User.email == email)
+                .values(hashed_password=hashed_password)
+            )
+            await db.commit()
+            
+            if result.rowcount == 0:
+                raise HTTPException(status_code=404, detail="User not found")
+                
+            return True
+            
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to update password: {str(e)}")
+        
+    async def create_reset_password_request(self, db: AsyncSession, email: str) -> tuple[int, str]:
+        """Create password reset request and return reset_id and OTP code"""
+        # Check if user exists
+        user = await self.get_by_email(db, email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User with this email not found")
+        
+        # Generate 4-digit OTP
+        otp_code = random.randint(1000, 9999)
+        
+        # Delete any existing reset requests for this email
+        existing_result = await db.execute(
+            select(ResetPassword).where(ResetPassword.email == email)
         )
-        db.add(for_db)
+        existing_records = existing_result.scalars().all()
+        for record in existing_records:
+            await db.delete(record)
         await db.commit()
-        await db.refresh(for_db)
+        
+        # Create new reset request
+        reset_request = ResetPassword(
+            email=email,
+            code=otp_code,
+            created_at=datetime.now()
+        )
+        
+        db.add(reset_request)
+        await db.commit()
+        await db.refresh(reset_request)
+        
+        return reset_request.id, str(otp_code)
+    
+    async def complete_password_reset(self, db: AsyncSession, reset_id: int, email: str) -> bool:
+        """Complete password reset by deleting the reset record"""
+        try:
+            result = await db.execute(
+                select(ResetPassword).where(
+                    ResetPassword.id == reset_id,
+                    ResetPassword.email == email
+                )
+            )
+            reset_record = result.scalar_one_or_none()
+            
+            if reset_record:
+                await db.delete(reset_record)
+                await db.commit()
+                
+            return True
+            
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to complete reset: {str(e)}")
 
 
 

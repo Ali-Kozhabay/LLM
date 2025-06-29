@@ -36,10 +36,12 @@ class User(Base):
 
 
 class ResetPassword(Base):
+    __tablename__ = "resetpasswords"
 
-    __tablename__="resetpasswords"
-
-    id:Mapped[int]=mapped_column(primary_key=True,unique=True)
-    email:Mapped[str]=mapped_column(unique=True)
-    code:Mapped[int]=mapped_column()
-    created_at:Mapped[datetime]=mapped_column(default=datetime.now())
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), index=True)
+    code: Mapped[int] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now()
+    )
