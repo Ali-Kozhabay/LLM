@@ -18,3 +18,9 @@ class CoursePublish(BaseModel):
 class CoursePurchase(BaseModel):
     student_id:int
     course_id:int
+
+class ContentSchema(BaseModel):
+
+    course_id:int
+    link:str|None
+    url:str|None

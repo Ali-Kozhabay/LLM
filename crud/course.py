@@ -2,8 +2,8 @@
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.course import Course, Enrollment
-from app.schemas.course import CourseCreate, CoursePublish
+from app.models.course import Course, Enrollment, Content
+from app.schemas.course import CourseCreate, CoursePublish, ContentSchema
 
 
 class CourseCRUD:
@@ -52,7 +52,29 @@ class CourseCRUD:
         except Exception as e:
             raise e
         
-        
+    async def get_content(self,db:AsyncSession, id:int):
+        try:
+            res = await db.execute(select(Content).where(Content.course_id==id))
+            content = res.scalar_one_or_none() 
+            return {
+                "link":content.link,
+                "url": content.url
+            }
+        except Exception as e:
+            raise e
+    
+    async def add_content(self,db:AsyncSession, id:int,link:str|None,url:str|None):
+        content=Content(
+                course_id=id,
+                link=link,
+                url=url
+            )
+        try:
+            db.add(content)
+            await db.commit()   
+            await db.refresh(content)   
+        except Exception as e:
+            raise e
         
         
         

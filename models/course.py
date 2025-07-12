@@ -68,3 +68,12 @@ class Progress(Base):
     
     # Relationships
     lesson: Mapped["Lesson"] = relationship("Lesson", back_populates="progress")
+
+class Content(Base):
+    __tablename__ = "contents"
+
+    id:Mapped[int] = mapped_column(primary_key=True,unique=True)
+    course_id:Mapped[int] = mapped_column(ForeignKey('courses.id'))
+    link:Mapped[str] = mapped_column()
+    url:Mapped[str] = mapped_column()
+    

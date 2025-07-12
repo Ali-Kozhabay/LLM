@@ -1,13 +1,13 @@
 import logging
-import json
-from datetime import timedelta
+
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.crud.course import course_crud
+from app.crud.lesson import lesson_crud
 from app.models.user import User
 from app.api.deps import get_current_superuser ,get_current_user
 from app.schemas.course import CourseCreate, CoursePublish
@@ -22,8 +22,8 @@ async def get_courses(db: AsyncSession = Depends(get_db)):
     logger.info("Fetching all courses")
     courses = await course_crud.get_published_courses_from_db(db)
     if not courses:
-        return {'message':'No avaliable course'}
-    return {'courses:':courses.scalar_one_or_none}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No courses found")
+    return {'courses:':courses.scalars().all()}
 
 
 @router.get("/course/{id}")
@@ -62,18 +62,19 @@ async def publish_courses(
     except Exception :
         raise Exception
 
-@router.post("/purchase_course/{course_id}")
+@router.post("/purchase_course/{course_id}",status_code=200)
 async def purchase_course(
     course_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User=Depends(get_current_user),
 ):
     try:
-        res = await course_crud.get_course_from_db_by_id(db=db, id=course_id)
         await course_crud.purchase_course(db=db,student_id=current_user.id,course_id=course_id)
+        await lesson_crud.enroll_lesson(db,student_id=current_user.id,course_id=course_id)
         return {'message':'Course was purchased'}
-    except:
-        return {'message':'Error'}
+    except HTTPException as e:
+        return {'message': e}
+
 
 
     

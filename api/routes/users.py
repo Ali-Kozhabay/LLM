@@ -1,11 +1,13 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_active_user, get_current_user
+from app.api.deps import get_current_active_user, get_current_user, get_current_superuser
 from app.core.database import get_db
 from app.crud.user import user_crud
+from app.crud.course import course_crud
 from app.models.user import User
 from app.schemas.user import UserInDB, UserUpdate
+from app.schemas.course import ContentSchema
 
 router = APIRouter()
 
@@ -33,3 +35,18 @@ async def get_my_courses(db:AsyncSession=Depends(get_db),current_user:User=Depen
     except Exception as e:
         raise e
     
+@router.get('/get_content')
+async def get_content(course_id:int, db:AsyncSession=Depends(get_db)):
+    try:
+        return await course_crud.get_content(db,course_id)
+    except HTTPException as e:
+        raise e
+
+    
+@router.post('/add_content',status_code=201)
+async def add_content(content:ContentSchema=Depends(), db:AsyncSession=Depends(get_db),current_user:User=Depends(get_current_superuser)):
+    try:
+        await course_crud.add_content(db,content.course_id,content.link,content.url)
+        return {'message':'created'}
+    except HTTPException as e:
+        raise e
