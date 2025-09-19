@@ -1,5 +1,6 @@
+from _pyrepl.commands import delete
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.course import Course, Enrollment, Content
@@ -75,6 +76,14 @@ class CourseCRUD:
             await db.refresh(content)   
         except Exception as e:
             raise e
+
+    async def delete_course(self,db:AsyncSession, course_id:int):
+        try:
+            await db.execute(delete(Course).where(Course.id == course_id))
+            await db.commit()
+        except Exception as e:
+            raise e
+
         
         
         

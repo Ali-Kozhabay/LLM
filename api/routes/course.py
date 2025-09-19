@@ -75,6 +75,13 @@ async def purchase_course(
     except HTTPException as e:
         return {'message': e}
 
+@router.delete("/delete_course/{course_id}",status_code=200)
+async def delete_course(course_id:int ,db: AsyncSession = Depends(get_db)):
+    try:
+        await course_crud.delete_course(db=db,course_id=course_id)
+        return {'message': 'Course was deleted'}
+    except HTTPException as e:
+        return {'message': e}
 
 
     
