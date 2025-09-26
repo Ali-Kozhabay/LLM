@@ -8,7 +8,6 @@ class CourseCreate(BaseModel):
     description : str
     teacher_id : int
     price : float
-
     
 class CoursePublish(BaseModel):
     id: int
@@ -20,7 +19,6 @@ class CoursePurchase(BaseModel):
     course_id:int
 
 class ContentSchema(BaseModel):
-
     course_id:int
     link:str|None
     url:str|None

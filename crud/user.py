@@ -12,6 +12,8 @@ from typing import Optional
 
 class UserCRUD:
 
+    # def init(self,db:AsyncSession):
+    #     self.db = db
     
     async def get_by_email(self, db: AsyncSession, email: str) -> Optional[User]:
         res=await db.execute(select(User).where(User.email == email))
@@ -175,6 +177,11 @@ class UserCRUD:
         except Exception as e:
             await db.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to complete reset: {str(e)}")
+
+
+    async def get_all_users(self,db:AsyncSession):
+        users = await db.execute(select(User))
+        return users
 
 
 

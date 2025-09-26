@@ -46,6 +46,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
         subject=user.username, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/reset-password", response_model=dict)

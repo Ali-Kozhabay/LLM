@@ -34,19 +34,12 @@ async def get_my_courses(db:AsyncSession=Depends(get_db),current_user:User=Depen
         return await user_crud.get_my_course(db=db,id=current_user.id)
     except Exception as e:
         raise e
-    
-@router.get('/get_content')
-async def get_content(course_id:int, db:AsyncSession=Depends(get_db)):
-    try:
-        return await course_crud.get_content(db,course_id)
-    except HTTPException as e:
-        raise e
 
-    
-@router.post('/add_content',status_code=201)
-async def add_content(content:ContentSchema=Depends(), db:AsyncSession=Depends(get_db),current_user:User=Depends(get_current_superuser)):
-    try:
-        await course_crud.add_content(db,content.course_id,content.link,content.url)
-        return {'message':'created'}
-    except HTTPException as e:
-        raise e
+@router.get('/all_users')
+async def get_all_users(db:AsyncSession=Depends(get_db),super_user:User=Depends(get_current_superuser)):
+    users = await user_crud.get_all_users(db=db)
+    if users is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return users.scalar_one_or_none()
+
+
