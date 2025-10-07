@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Union
+from typing import Any
 from jose import jwt  # ✅ correct
 
 from passlib.context import CryptContext
@@ -7,7 +7,7 @@ from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def create_access_token(subject: str|Any, expires_delta: timedelta = None) -> str:
+def create_access_token(subject: str|Any, expires_delta: timedelta | None) -> str:
     if expires_delta:
         expire = datetime.now() + expires_delta
     else:
