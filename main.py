@@ -3,11 +3,11 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from sqlalchemy_utils import database_exists, create_database
 
 from app.core.database import engine, Base
-from app.api.routes import auth, users, course
+from app.api.routes import users, course, auth
 from app.core.config import settings
-
 
   
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         logger.info("Creating all tables in the database")
+
         await conn.run_sync(Base.metadata.create_all)
         logger.info("All tables created successfully")
     yield
@@ -45,9 +46,10 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(course.router ,prefix="/api/v1/course", tags=["courses"])
+app.include_router(auth.router ,prefix="/api/v1/auth", tags=["auth"])
+
 
 @app.get("/")
 def read_root():

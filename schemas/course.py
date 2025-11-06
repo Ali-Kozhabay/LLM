@@ -10,7 +10,7 @@ class CourseCreate(BaseModel):
     price : float
     
 class CoursePublish(BaseModel):
-    id: int
+    id: None
     publish: bool
 
 

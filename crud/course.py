@@ -30,8 +30,7 @@ class CourseCRUD:
         db.add(db_course)
         await db.commit()
         await db.refresh(db_course)
-        
-        return {'message':"Course is created"}
+        return {'message':"Course is created","course_id":db_course.id}
         
     async def publish_course(self,db:AsyncSession,publish: CoursePublish):
         try:
@@ -46,9 +45,11 @@ class CourseCRUD:
                 student_id=student_id,
                 course_id=course_id
             )
+
             db.add(db_purchase_course)
             await db.commit()
             await db.refresh(db_purchase_course)
+
         except Exception as e:
             raise e
         

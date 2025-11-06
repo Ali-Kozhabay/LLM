@@ -70,7 +70,6 @@ async def purchase_course(
 ):
     try:
         await course_crud.purchase_course(db=db,student_id=current_user.id,course_id=course_id)
-        await lesson_crud.enroll_lesson(db,student_id=current_user.id,course_id=course_id)
         return {'message':'Course was purchased'}
     except HTTPException as e:
         return {'message': e}

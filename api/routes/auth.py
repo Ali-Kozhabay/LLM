@@ -27,7 +27,7 @@ async def register(user_in: UserCreate=Depends(), db: AsyncSession = Depends(get
         logger.error(f"User registration failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail=str(e),
         )
 
 @router.post("/login", response_model=Token)
@@ -45,7 +45,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     access_token = create_access_token(
         subject=user.username, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
     return {"access_token": access_token, "token_type": "bearer"}
 
 

@@ -21,6 +21,7 @@ class Course(Base):
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+    course: Mapped[str] = mapped_column(String(255))
     
     # Relationships
     teacher: Mapped[List["User"]] = relationship("User", back_populates="created_courses")
